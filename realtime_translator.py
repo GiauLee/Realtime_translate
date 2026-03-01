@@ -111,7 +111,6 @@ class ScreenTranslator:
     def detect_text_in_roi(self, image):
         cv_img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
-        gray = cv2.convertScaleAbs(gray, alpha=1.3, beta=5)  # tăng nhẹ contrast
 
         data = pytesseract.image_to_data(gray, lang='eng', output_type=pytesseract.Output.DICT)
 
