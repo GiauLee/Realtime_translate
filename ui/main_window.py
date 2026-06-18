@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk
 
 class MainWindow:
-    def __init__(self, on_start, on_stop, on_reload, on_toggle_top):
+    def __init__(self, on_start, on_stop, on_reload, on_toggle_top, on_engine_change=None):
         self.root = tk.Tk()
         self.root.title("Realtime Screen Translator")
         self.root.geometry("650x300")
@@ -15,6 +15,7 @@ class MainWindow:
         self.on_stop = on_stop
         self.on_reload = on_reload
         self.on_toggle_top = on_toggle_top
+        self.on_engine_change = on_engine_change
 
         self.is_collapsed = False
         self.saved_geometry = None
@@ -36,6 +37,18 @@ class MainWindow:
         self.btn_reload = tk.Button(self.left_frame, text="Reload", command=self.on_reload, width=15)
         self.btn_reload.pack(pady=5)
         
+        # --- Engine selector ---
+        self.engine_label = tk.Label(self.left_frame, text="Engine dịch:", font=("Arial", 8))
+        self.engine_label.pack(pady=(10, 2))
+        self.engine_var = tk.StringVar(value="Argos (Offline)")
+        self.engine_combo = ttk.Combobox(
+            self.left_frame, textvariable=self.engine_var,
+            values=["Argos (Offline)", "Google (Online)"],
+            state="readonly", width=15
+        )
+        self.engine_combo.pack(pady=(0, 5))
+        self.engine_combo.bind("<<ComboboxSelected>>", self._on_engine_selected)
+
         self.btn_top = tk.Button(self.left_frame, text="Tắt ghim cửa sổ", command=self.on_toggle_top, width=15)
         self.btn_top.pack(pady=5)
 
@@ -78,9 +91,18 @@ class MainWindow:
         self.txt_original = scrolledtext.ScrolledText(self.right_frame, height=5, font=("Arial", 10))
         self.txt_original.grid(row=1, column=0, sticky="nsew", pady=2)
         
-        tk.Label(self.right_frame, text="Bản dịch (VI):").grid(row=2, column=0, sticky="w")
+        self.lbl_translated = tk.Label(self.right_frame, text="Bản dịch (VI) — Argos (Offline):")
+        self.lbl_translated.grid(row=2, column=0, sticky="w")
         self.txt_translated = scrolledtext.ScrolledText(self.right_frame, height=5, bg="#f0f8ff", font=("Arial", 10, "bold"))
         self.txt_translated.grid(row=3, column=0, sticky="nsew", pady=2)
+
+    def _on_engine_selected(self, event):
+        """Xử lý khi user chọn engine dịch khác"""
+        selected = self.engine_var.get()
+        engine_name = "argos" if "Argos" in selected else "google"
+        self.lbl_translated.config(text=f"Bản dịch (VI) — {selected}:")
+        if self.on_engine_change:
+            self.on_engine_change(engine_name)
 
     def on_opacity_change(self, value):
         opacity = float(value)
@@ -102,6 +124,9 @@ class MainWindow:
             self.btn_start.pack(pady=5)
             self.btn_stop.pack(pady=5)
             self.btn_reload.pack(pady=5)
+            # Re-pack engine selector
+            self.engine_label.pack(pady=(10, 2))
+            self.engine_combo.pack(pady=(0, 5))
             self.btn_top.pack(pady=5)
             self.btn_compact.pack(pady=5)
             self.btn_collapse.pack(pady=5)

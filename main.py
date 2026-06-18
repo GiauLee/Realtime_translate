@@ -23,7 +23,8 @@ class ScreenTranslatorApp:
             on_start=self.handle_start,
             on_stop=self.handle_stop,
             on_reload=self.handle_reload,
-            on_toggle_top=self.handle_toggle_top
+            on_toggle_top=self.handle_toggle_top,
+            on_engine_change=self.handle_engine_change
         )
         
         # 3. Các biến trạng thái
@@ -79,6 +80,14 @@ class ScreenTranslatorApp:
         self.ui.root.attributes('-topmost', self.ui.is_always_on_top)
         new_text = "Tắt ghim cửa sổ" if self.ui.is_always_on_top else "Bật ghim cửa sổ"
         self.ui.btn_top.config(text=new_text)
+
+    def handle_engine_change(self, engine_name):
+        """Khi user chọn engine dịch khác từ dropdown"""
+        self.translator.set_engine(engine_name)
+        # Xóa cache vì kết quả dịch sẽ khác
+        self.translation_cache.clear()
+        # Dịch lại ngay với engine mới nếu đang có vùng chọn
+        self.handle_reload()
 
     # --- Luồng xử lý chính ---
 
